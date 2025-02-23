@@ -1,20 +1,18 @@
-# Use Ubuntu 20.04 as the base image
 FROM ubuntu:20.04
-
-# Disable interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update packages and install coturn
 RUN apt-get update && \
-    apt-get install -y coturn && \
+    apt-get install -y coturn python3 && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy your custom TURN server configuration file into the container
 COPY turnserver.conf /etc/turnserver.conf
 
-# Expose the default TURN port for both UDP and TCP
+# Expose TURN ports and HTTP port 80
 EXPOSE 3478/udp
 EXPOSE 3478/tcp
+EXPOSE 80/tcp
 
-# Start coturn with the configuration file in verbose mode
-CMD ["turnserver", "-c", "/etc/turnserver.conf", "-v"]
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+CMD ["/entrypoint.sh"]
